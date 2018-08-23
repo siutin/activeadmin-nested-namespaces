@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    activeadmin-nested-namespaces (0.1.1)
+    activeadmin-nested-namespaces (0.1.2)
       activeadmin (>= 1.2, < 2.0)
 
 GEM
