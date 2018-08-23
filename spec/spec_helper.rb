@@ -1,5 +1,5 @@
 require "bundler/setup"
-require "activeadmin/nested/namespaces"
+require "active_admin/nested_namespace"
 
 RSpec.configure do |config|
   # Enable flags like --only-failures and --next-failure

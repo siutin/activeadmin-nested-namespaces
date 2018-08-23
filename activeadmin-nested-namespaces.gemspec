@@ -1,11 +1,11 @@
 
 lib = File.expand_path("../lib", __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require "activeadmin/nested/namespaces/version"
+require "active_admin/nested_namespace/version"
 
 Gem::Specification.new do |spec|
   spec.name          = "activeadmin-nested-namespaces"
-  spec.version       = Activeadmin::Nested::Namespaces::VERSION
+  spec.version       = ActiveAdmin::NestedNamespace::VERSION
   spec.authors       = ["osiutino"]
   spec.email         = ["osiutino@gmail.com"]
 
