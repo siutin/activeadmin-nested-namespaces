@@ -12,3 +12,6 @@
 
 # Intellij files
 .idea
+
+/dummy_app/log/**/*.log
+/dummy_app/vendor/bundle/
