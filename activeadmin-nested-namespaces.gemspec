@@ -9,8 +9,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ["osiutino"]
   spec.email         = ["osiutino@gmail.com"]
 
-  spec.summary       = %q{activeadmin nested namespaces support.}
-  spec.description   = %q{activeadmin nested namespaces support.}
+  spec.summary       = %q{ ActiveAdmin plugin to enable nested namespaces support }
+  spec.description   = %q{ This plugin allows you to register resources/pages with nested namespaces in ActiveAdmin. }
   spec.homepage      = "https://github.com/siutin/activeadmin-nested-namespaces"
   spec.license       = "MIT"
 
