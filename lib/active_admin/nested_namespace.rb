@@ -118,9 +118,7 @@ module ActiveAdmin
         end
 
       end
-
-      # TODO: patch active_admin/orm/active_record/comments.rb
-
+      
       ActiveAdmin::Comment.class_eval do
         def self.find_for_resource_in_namespace(resource, name)
           where(
@@ -265,6 +263,84 @@ module ActiveAdmin
           @body.add_class(active_admin_namespace.name_path.map(&:to_s).join('_') + '_namespace')
         end
       end
+
+      # patch - active_admin/orm/active_record/comments.rb
+      ActiveAdmin.after_load do |app|
+        app.namespaces.each do |namespace|
+
+          # Un-register default comment pages
+          namespace.resources.instance_variable_get(:@collection).delete_if {|k,v| v.instance_variable_get(:@resource_class_name) == '::ActiveAdmin::Comment' }
+
+          # Re-register comments pages with nested namespaces
+          namespace.register ActiveAdmin::Comment, as: namespace.comments_registration_name do
+            actions :index, :show, :create, :destroy
+
+            menu namespace.comments ? namespace.comments_menu : false
+
+            config.comments = false # Don't allow comments on comments
+            config.batch_actions = false # The default destroy batch action isn't showing up anyway...
+
+            scope :all, show_count: false
+            # Register a scope for every namespace that exists.
+            # The current namespace will be the default scope.
+            app.namespaces.map(&:name_path).sort { |x,y| x[0] <=> y[0] }.each do |name_path|
+              scope "/#{name_path.join('/')}", default: namespace.name_path == name_path do |scope|
+                scope.where namespace: name_path.to_s
+              end
+            end
+
+            # Store the author and namespace
+            before_save do |comment|
+              comment.namespace = active_admin_config.namespace.name_path
+              comment.author = current_active_admin_user
+            end
+
+            controller do
+              # Prevent N+1 queries
+              def scoped_collection
+                super.includes(:author, :resource)
+              end
+
+              # Redirect to the resource show page after comment creation
+              def create
+                create! do |success, failure|
+                  success.html do
+                    ActiveAdmin::Dependency.rails.redirect_back self, active_admin_root
+                  end
+                  failure.html do
+                    flash[:error] = I18n.t 'active_admin.comments.errors.empty_text'
+                    ActiveAdmin::Dependency.rails.redirect_back self, active_admin_root
+                  end
+                end
+
+                def destroy
+                  destroy! do |success, failure|
+                    success.html do
+                      ActiveAdmin::Dependency.rails.redirect_back self, active_admin_root
+                    end
+                    failure.html do
+                      ActiveAdmin::Dependency.rails.redirect_back self, active_admin_root
+                    end
+                  end
+                end
+              end
+            end
+
+            permit_params :body, :namespace, :resource_id, :resource_type
+
+            index do
+              column I18n.t('active_admin.comments.resource_type'), :resource_type
+              column I18n.t('active_admin.comments.author_type'), :author_type
+              column I18n.t('active_admin.comments.resource'), :resource
+              column I18n.t('active_admin.comments.author'), :author
+              column I18n.t('active_admin.comments.body'), :body
+              column I18n.t('active_admin.comments.created_at'), :created_at
+              actions
+            end
+          end
+        end
+      end
+      
     end
   end
 end
