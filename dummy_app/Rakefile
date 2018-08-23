@@ -2,7 +2,7 @@
 # for example lib/tasks/capistrano.rake, and they will automatically be available to Rake.
 
 require_relative 'config/application'
-# Rails.application.load_tasks
-require "bundler/gem_tasks"
-require File.expand_path('../config/application', __FILE__)
-DummyApp::Application.load_tasks
+Rails.application.load_tasks
+# require "bundler/gem_tasks"
+# require File.expand_path('../config/application', __FILE__)
+# DummyApp::Application.load_tasks
