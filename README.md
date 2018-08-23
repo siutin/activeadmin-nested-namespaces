@@ -1,8 +1,6 @@
-# Activeadmin::Nested::Namespaces
+# ActiveAdmin Nested Namespace
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/activeadmin/nested/namespaces`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+This plugin allows you to register resources/pages with nested namespaces in ActiveAdmin. 
 
 ## Installation
 
@@ -14,30 +12,129 @@ gem 'activeadmin-nested-namespaces'
 
 And then execute:
 
-    $ bundle
+    $ bundle install
 
-Or install it yourself as:
 
-    $ gem install activeadmin-nested-namespaces
+Copy and paste these lines to `config/initializers/active_admin_nested_namespace.rb`
 
-## Usage
+```ruby
+require 'active_admin/nested_namespace'
 
-TODO: Write usage instructions here
+if defined?(ActiveAdmin::NestedNamespace)
+  ActiveAdmin::NestedNamespace.setup
+end
+```
 
-## Development
 
-After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake spec` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
+# Get Started
 
-To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
+Register resources to 2 different namespaces:  
 
-## Contributing
+```ruby
+# /app/admin/site1/foo/bar/posts.rb
+ActiveAdmin.register Post, namespace: [:admin, :site1, :foo, :bar] do
+  ...
+end
+```
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/activeadmin-nested-namespaces. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
+```ruby
+# /app/admin/site2/demo/posts.rb 
+ActiveAdmin.register Post, namespace: [:admin, :site2, :demo] do
+  ...
+end
+```
+
+It will generate routes like:
+
+```
+              admin_site1_foo_bar_root GET        /admin/site1/foo/bar(.:format)                    admin/site1/foo/bar/dashboard#index
+                 admin_site2_demo_root GET        /admin/site2/demo(.:format)                       
+batch_action_admin_site1_foo_bar_posts POST       /admin/site1/foo/bar/posts/batch_action(.:format) admin/site1/foo/bar/posts#batch_action
+             admin_site1_foo_bar_posts GET        /admin/site1/foo/bar/posts(.:format)              admin/site1/foo/bar/posts#index
+                                       POST       /admin/site1/foo/bar/posts(.:format)              admin/site1/foo/bar/posts#create
+          new_admin_site1_foo_bar_post GET        /admin/site1/foo/bar/posts/new(.:format)          admin/site1/foo/bar/posts#new
+         edit_admin_site1_foo_bar_post GET        /admin/site1/foo/bar/posts/:id/edit(.:format)     admin/site1/foo/bar/posts#edit
+              admin_site1_foo_bar_post GET        /admin/site1/foo/bar/posts/:id(.:format)          admin/site1/foo/bar/posts#show
+                                       PATCH      /admin/site1/foo/bar/posts/:id(.:format)          admin/site1/foo/bar/posts#update
+                                       PUT        /admin/site1/foo/bar/posts/:id(.:format)          admin/site1/foo/bar/posts#update
+                                       DELETE     /admin/site1/foo/bar/posts/:id(.:format)          admin/site1/foo/bar/posts#destroy
+          admin_site1_foo_bar_comments GET        /admin/site1/foo/bar/comments(.:format)           admin/site1/foo/bar/comments#index
+                                       POST       /admin/site1/foo/bar/comments(.:format)           admin/site1/foo/bar/comments#create
+           admin_site1_foo_bar_comment GET        /admin/site1/foo/bar/comments/:id(.:format)       admin/site1/foo/bar/comments#show
+                                       DELETE     /admin/site1/foo/bar/comments/:id(.:format)       admin/site1/foo/bar/comments#destroy
+   batch_action_admin_site2_demo_posts POST       /admin/site2/demo/posts/batch_action(.:format)    admin/site2/demo/posts#batch_action
+                admin_site2_demo_posts GET        /admin/site2/demo/posts(.:format)                 admin/site2/demo/posts#index
+            edit_admin_site2_demo_post GET        /admin/site2/demo/posts/:id/edit(.:format)        admin/site2/demo/posts#edit
+                 admin_site2_demo_post GET        /admin/site2/demo/posts/:id(.:format)             admin/site2/demo/posts#show
+                                       PATCH      /admin/site2/demo/posts/:id(.:format)             admin/site2/demo/posts#update
+                                       PUT        /admin/site2/demo/posts/:id(.:format)             admin/site2/demo/posts#update
+             admin_site2_demo_comments GET        /admin/site2/demo/comments(.:format)              admin/site2/demo/comments#index
+                                       POST       /admin/site2/demo/comments(.:format)              admin/site2/demo/comments#create
+              admin_site2_demo_comment GET        /admin/site2/demo/comments/:id(.:format)          admin/site2/demo/comments#show
+                                       DELETE     /admin/site2/demo/comments/:id(.:format)          admin/site2/demo/comments#destroy
+
+```
+
+# Configuration
+
+In your initializers/active_admin.rb, you can define your own handler to the following methods.
+
+* authentication_method
+* current_user_method
+* logout_link_path
+
+For example:
+
+``` ruby
+# config.authentication_method = :authenticate_admin_user!
+config.authentication_method = Proc.new do |name_path|
+    if [config.default_namespace, :root].include?(name_path.first)
+      :authenticate_admin_user!
+    else
+      "authenticate_#{name_path.map(&:to_s).join('_').underscore}_admin_user!".to_sym
+    end
+end
+
+# config.current_user_method = :current_admin_user
+config.current_user_method = Proc.new do |name_path|
+  if [config.default_namespace, :root].include?(name_path.first)
+    :current_admin_user
+  else
+    "current_#{name_path.map(&:to_s).join('_').underscore}_admin_user".to_sym
+  end
+end
+
+# config.logout_link_path = :destroy_admin_user_session_path 
+config.logout_link_path = Proc.new do |name_path|
+    if [config.default_namespace, :root].include?(name_path.first)
+      :destroy_admin_user_session_path
+    else
+      "destroy_#{name_path.map(&:to_s).join('_').underscore}_admin_user_session_path".to_sym
+    end
+end
+    
+```
+
+And in your routes.rb:
+
+```ruby
+  namespace :site1 do
+    namespace :foo do
+      namespace :bar do
+        devise_for :admin_users, ActiveAdmin::Devise.config
+      end
+    end
+  end
+  namespace :site2 do
+    namespace :demo do
+      devise_for :admin_users, ActiveAdmin::Devise.config
+    end
+  end
+```
+
+## Contributors
+ [Martin Chan](https://twitter.com/osiutino) - creator 
 
 ## License
 
-The gem is available as open source under the terms of the [MIT License](https://opensource.org/licenses/MIT).
-
-## Code of Conduct
-
-Everyone interacting in the Activeadmin::Nested::Namespaces project’s codebases, issue trackers, chat rooms and mailing lists is expected to follow the [code of conduct](https://github.com/[USERNAME]/activeadmin-nested-namespaces/blob/master/CODE_OF_CONDUCT.md).
+[MIT](https://opensource.org/licenses/MIT)
