@@ -2,6 +2,8 @@
 
 This plugin allows you to register resources/pages with nested namespaces in ActiveAdmin. 
 
+Here is the example project: https://github.com/siutin/activeadmin-nested-namespaces
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -24,7 +26,6 @@ if defined?(ActiveAdmin::NestedNamespace)
   ActiveAdmin::NestedNamespace.setup
 end
 ```
-
 
 # Get Started
 
