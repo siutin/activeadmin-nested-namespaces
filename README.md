@@ -4,6 +4,8 @@ This plugin allows you to register resources/pages with nested namespaces in Act
 
 Here is the example project: https://github.com/siutin/activeadmin-nested-namespaces-example
 
+![demo](https://github.com/siutin/activeadmin-nested-namespaces-example/blob/master/demo.gif)
+
 ## Installation
 
 Add this line to your application's Gemfile:
