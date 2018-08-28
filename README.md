@@ -2,7 +2,7 @@
 
 This plugin allows you to register resources/pages with nested namespaces in ActiveAdmin. 
 
-Here is the example project: https://github.com/siutin/activeadmin-nested-namespaces
+Here is the example project: https://github.com/siutin/activeadmin-nested-namespaces-example
 
 ## Installation
 
